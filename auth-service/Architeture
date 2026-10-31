@@ -1,0 +1,67 @@
+auth-service/
+└── src/main/java/com/crm/auth/
+    ├── AuthServiceApplication.java
+    ├── config/
+    │   ├── SecurityConfig.java
+    │   └── JwtConfig.java
+    ├── controller/
+    │   ├── AuthController.java
+    │   └── UserController.java
+    ├── dto/
+    │   ├── ApiResponse.java
+    │   ├── LoginRequest.java
+    │   ├── LoginResponse.java
+    │   └── RegisterRequest.java
+    ├── entity/
+    │   ├── User.java
+    │   ├── Role.java
+    │   ├── Permission.java
+    │   └── RefreshToken.java
+    ├── repository/
+    │   ├── UserRepository.java
+    │   ├── RoleRepository.java
+    │   └── RefreshTokenRepository.java
+    ├── service/
+    │   ├── AuthService.java
+    │   ├── JwtService.java
+    │   └── RefreshTokenService.java
+    └── exception/
+        ├── GlobalExceptionHandler.java
+        └── ResourceNotFoundException.java
+└── src/main/resources/
+    ├── application.properties
+    └── db/migration/
+        └── V1__create_initial_schema.sql
+
+
+
+
+
+
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/auth/login` | Authenticate a user |
+| POST | `/api/v1/auth/refresh` | Rotate refresh token |
+| POST | `/api/v1/auth/logout` | Log out and revoke tokens |
+| POST | `/api/v1/auth/password/forgot` | Request password reset |
+| POST | `/api/v1/auth/password/reset` | Reset password |
+| GET | `/api/v1/users` | List users; ADMIN only |
+| POST | `/api/v1/users` | Create a user; ADMIN only |
+| PATCH | `/api/v1/users/{id}` | Update a user; ADMIN only |
+| PUT | `/api/v1/users/{id}/roles` | Assign roles; ADMIN only |
+| GET | `/.well-known/jwks.json` | Publish public signing keys |
+
+
+
+
+
+{
+  "success": true,
+  "status": 201,
+  "message": "User registered successfully",
+  "data": null,
+  "timestamp": "2026-10-30T12:00:00Z",
+  "path": "/api/auth/register",
+  "errors": null
+}

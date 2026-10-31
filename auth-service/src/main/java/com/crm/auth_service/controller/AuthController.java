@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.crm.auth_service.dto.ApiResponse;
+import com.crm.auth_service.dto.LoginRequest;
+import com.crm.auth_service.dto.LoginResponse;
 import com.crm.auth_service.dto.RegisterRequest;
+import com.crm.auth_service.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -15,13 +18,24 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final AuthService authService;
+
+    // Constructor injection
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    // ==========================================
+    // REGISTER USER
+    // POST /api/auth/register
+    // ==========================================
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(
             @Valid @RequestBody RegisterRequest request,
-            HttpServletRequest httpRequest
-    ) {
+            HttpServletRequest httpRequest) {
 
-        // Call your AuthService here to register the user.
+        authService.register(request);
 
         ApiResponse<Void> response = ApiResponse.success(
                 HttpStatus.CREATED.value(),
@@ -32,6 +46,30 @@ public class AuthController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    // ==========================================
+    // LOGIN USER
+    // POST /api/auth/login
+    // ==========================================
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        LoginResponse loginResponse = authService.login(request);
+
+        ApiResponse<LoginResponse> response = ApiResponse.success(
+                HttpStatus.OK.value(),
+                "Login successful",
+                loginResponse,
+                httpRequest.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
                 .body(response);
     }
 }
