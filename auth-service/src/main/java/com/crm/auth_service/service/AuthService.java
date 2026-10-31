@@ -1,12 +1,15 @@
 package com.crm.auth_service.service;
 
 import java.time.Instant;
+import java.util.Locale;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import com.crm.auth_service.dto.LoginRequest;
 import com.crm.auth_service.dto.LoginResponse;
 import com.crm.auth_service.dto.RegisterRequest;
@@ -23,18 +26,20 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    // Constructor injection
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
 
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     // ==========================================
@@ -46,7 +51,6 @@ public class AuthService {
 
         String email = normalizeEmail(request.email());
 
-        // Check duplicate email
         if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -54,18 +58,15 @@ public class AuthService {
             );
         }
 
-        // Hash password
         String hashedPassword = passwordEncoder.encode(
                 request.password()
         );
 
-        // Get default role
         Role defaultRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new IllegalStateException(
                         "Default role ROLE_USER not found"
                 ));
 
-        // Create user
         User user = new User(
                 request.firstName().trim(),
                 request.lastName() == null
@@ -75,10 +76,8 @@ public class AuthService {
                 hashedPassword
         );
 
-        // Assign default role
         user.addRole(defaultRole);
 
-        // Save user
         userRepository.save(user);
     }
 
@@ -86,18 +85,16 @@ public class AuthService {
     // LOGIN USER
     // ==========================================
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse login(LoginRequest request) {
 
         String email = normalizeEmail(request.email());
 
-        // Find user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException(
                         "Invalid email or password"
                 ));
 
-        // Verify password
         if (!passwordEncoder.matches(
                 request.password(),
                 user.getPasswordHash())) {
@@ -107,24 +104,39 @@ public class AuthService {
             );
         }
 
-        // Check account status
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BadCredentialsException(
                     "Account is not active"
             );
         }
 
-        // Generate JWT access token
+        // Generate access token
         String accessToken = jwtService.generateAccessToken(user);
 
-        // Get token expiry
-        Instant expiresAt = jwtService.getExpirationTime();
+        Instant accessTokenExpiresAt =
+                jwtService.getExpirationTime();
+
+        // Generate refresh token
+        RefreshTokenService.RefreshTokenResult refreshResult =
+                refreshTokenService.createRefreshToken(user);
 
         return new LoginResponse(
                 accessToken,
+                refreshResult.refreshToken(),
                 "Bearer",
-                expiresAt
+                accessTokenExpiresAt,
+                refreshResult.expiresAt()
         );
+    }
+
+    // ==========================================
+    // LOGOUT USER
+    // ==========================================
+
+    @Transactional
+    public void logout(String refreshToken) {
+
+        refreshTokenService.revokeRefreshToken(refreshToken);
     }
 
     // ==========================================
@@ -133,8 +145,6 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
 
-        return email.trim().toLowerCase(
-                java.util.Locale.ROOT
-        );
+        return email.trim().toLowerCase(Locale.ROOT);
     }
-}
+}	

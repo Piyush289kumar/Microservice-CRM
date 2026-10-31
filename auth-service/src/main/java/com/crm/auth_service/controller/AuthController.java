@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.crm.auth_service.dto.ApiResponse;
 import com.crm.auth_service.dto.LoginRequest;
 import com.crm.auth_service.dto.LoginResponse;
+import com.crm.auth_service.dto.LogoutRequest;
 import com.crm.auth_service.dto.RegisterRequest;
 import com.crm.auth_service.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,5 +72,27 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
+    }
+    
+    
+ // ==========================================
+    // LOGOUT USER
+    // POST /api/auth/logout
+    // ==========================================
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody LogoutRequest request,
+            HttpServletRequest httpRequest) {
+
+        authService.logout(request.refreshToken());
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        200,
+                        "Logout successful",
+                        null,
+                        httpRequest.getRequestURI()
+                )
+        );
     }
 }
