@@ -90,7 +90,7 @@ public class AuthService {
 
         String email = normalizeEmail(request.email());
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> new BadCredentialsException(
                         "Invalid email or password"
                 ));

@@ -36,7 +36,7 @@ public class UserController {
 
         UUID userId = UUID.fromString(jwt.getSubject());
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found")
                 );

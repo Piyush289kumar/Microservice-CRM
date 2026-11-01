@@ -80,19 +80,11 @@ public class AuthController {
     // POST /api/auth/logout
     // ==========================================
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(
-            @Valid @RequestBody LogoutRequest request,
-            HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request, HttpServletRequest httpRequest) {
 
         authService.logout(request.refreshToken());
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        200,
-                        "Logout successful",
-                        null,
-                        httpRequest.getRequestURI()
-                )
+        return ResponseEntity.ok(ApiResponse.success(200,"Logout successful",null,httpRequest.getRequestURI())
         );
     }
 }
