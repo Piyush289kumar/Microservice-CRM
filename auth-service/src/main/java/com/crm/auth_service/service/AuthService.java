@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.crm.auth_service.dto.LoginRequest;
 import com.crm.auth_service.dto.LoginResponse;
+import com.crm.auth_service.dto.RefreshTokenRequest;
 import com.crm.auth_service.dto.RegisterRequest;
 import com.crm.auth_service.entity.Role;
 import com.crm.auth_service.entity.User;
@@ -138,6 +139,27 @@ public class AuthService {
 
         refreshTokenService.revokeRefreshToken(refreshToken);
     }
+    
+    
+    // ==========================================
+    // REFRESH ACCESS TOKEN
+    // ==========================================
+    @Transactional
+    public LoginResponse refreshToken(RefreshTokenRequest request) {
+
+        RefreshTokenService.RotatedTokenResult result =
+                refreshTokenService.rotateRefreshToken(
+                        request.refreshToken()
+                );
+
+        return new LoginResponse(
+                result.accessToken(),
+                result.refreshToken(),
+                "Bearer",
+                result.accessTokenExpiresAt(),
+                result.refreshTokenExpiresAt()
+        );
+    }		
 
     // ==========================================
     // EMAIL NORMALIZATION

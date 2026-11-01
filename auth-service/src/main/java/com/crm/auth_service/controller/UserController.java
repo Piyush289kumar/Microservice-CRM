@@ -16,7 +16,7 @@ import com.crm.auth_service.exception.ResourceNotFoundException;
 import com.crm.auth_service.repository.UserRepository;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserRepository userRepository;

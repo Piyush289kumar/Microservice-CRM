@@ -128,12 +128,13 @@ public class RefreshTokenService {
         refreshTokenRepository.save(newRefreshToken);
 
         // Generate new access token
-        String newAccessToken =
-                jwtService.generateAccessToken(user);
+        String newAccessToken = jwtService.generateAccessToken(user);
+        Instant accessTokenExpiresAt = jwtService.getExpirationTime();
 
         return new RotatedTokenResult(
                 newAccessToken,
                 newRawToken,
+                accessTokenExpiresAt,
                 newExpiresAt
         );
     }
@@ -223,13 +224,19 @@ public class RefreshTokenService {
             Instant expiresAt
     ) {}
 
-    // ==========================================
-    // ROTATED TOKEN RESULT
-    // ==========================================
-
-    public record RotatedTokenResult(
-            String accessToken,
-            String refreshToken,
-            Instant refreshTokenExpiresAt
-    ) {}
+	 // ==========================================
+	 // ROTATED TOKEN RESULT
+	 // ==========================================
+	
+	 public record RotatedTokenResult(
+	
+	         String accessToken,
+	
+	         String refreshToken,
+	
+	         Instant accessTokenExpiresAt,
+	
+	         Instant refreshTokenExpiresAt
+	
+	 ) {}
 }

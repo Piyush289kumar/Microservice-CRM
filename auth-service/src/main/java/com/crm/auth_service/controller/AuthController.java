@@ -10,13 +10,14 @@ import com.crm.auth_service.dto.ApiResponse;
 import com.crm.auth_service.dto.LoginRequest;
 import com.crm.auth_service.dto.LoginResponse;
 import com.crm.auth_service.dto.LogoutRequest;
+import com.crm.auth_service.dto.RefreshTokenRequest;
 import com.crm.auth_service.dto.RegisterRequest;
 import com.crm.auth_service.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -75,9 +76,9 @@ public class AuthController {
     }
     
     
- // ==========================================
+    // ==========================================
     // LOGOUT USER
-    // POST /api/auth/logout
+    // POST /api/v1/auth/logout
     // ==========================================
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request, HttpServletRequest httpRequest) {
@@ -87,4 +88,28 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(200,"Logout successful",null,httpRequest.getRequestURI())
         );
     }
+    
+    // ==========================================
+    // LOGOUT USER
+    // POST /api/v1/auth/refresh
+    // ==========================================
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request,
+            HttpServletRequest httpRequest) {	
+
+        LoginResponse loginResponse =
+                authService.refreshToken(request);
+
+        ApiResponse<LoginResponse> response =
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Token refreshed successfully",
+                        loginResponse,
+                        httpRequest.getRequestURI()
+                );
+
+        return ResponseEntity.ok(response);
+    }
+    
 }
